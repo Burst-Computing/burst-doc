@@ -13,7 +13,7 @@ cd burst-validation-results/download
 
 2. Install the required dependencies
 ```bash
-pip install .[aws]
+pip install lithops[aws]
 ```
 
 3. Configure AWS account to use S3 and Lambda 
