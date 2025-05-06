@@ -1,18 +1,6 @@
 # Hello world in Burst Computing
 This example wants to show how to use the Burst Computing framework to run a minimal example that involves all the components of the system. The example is a terasort application, which sorts a 1GB file. The example is implemented in Rust and uses the OpenWhisk framework to run the application in burst mode.
 
-## Constellation of repositories
-The Burst Computing framework is organized into several repositories, each with its own purpose. Big picture diagram of the repositories is shown below.
-
-![Burst Computing framework](./assets/img/big-picture-artifacts.png)
-
-Here is a brief description of each repository:
-- `openwhisk-burst`: Fork of the OpenWhisk project, modified to support burst computing. 
-- `openwhisk-deploy-kube-burst`: repository for deploying modified OpenWhisk in a Kubernetes cluster with burst computing support.
-- `openwhisk-runtime-rust-burst`: Fork of the OpenWhisk Rust runtime, modified to support burst computing.
-- `burst-communication-middleware`: Source code of the communication middleware used in the Burst Computing framework. This code is embedded in the OpenWhisk Rust runtime for allowing worker communication.
-- `burst-validation`: Repository for validating the Burst Computing framework. This repository contains the applications that are used to test the framework.
-
 ## How to run the Hello World
 This minimal example will use simplest infrastructure to run the terasort application in burst mode. It also uses prebuilt Docker images  for straightforward deployment. 
 

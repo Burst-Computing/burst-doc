@@ -1,0 +1,1 @@
+# Figure 6: Burst workers startup latencies
