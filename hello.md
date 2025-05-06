@@ -25,7 +25,6 @@ You need to deploy Openwhisk over the Kubernetes cluster.
     - Install Helm (https://helm.sh/docs/intro/install/).
     - Label the minikube node:
         ```bash
-        kubectl label nodes minikube openwhisk-role=core
         kubectl label nodes minikube openwhisk-role=invoker
         ```
     - Deploy Openwhisk:
