@@ -47,7 +47,7 @@ You need to deploy Openwhisk over the Kubernetes cluster.
         PYTHONPATH=. python3 terasort/terasort_burst.py \
             --ts-endpoint https://s3.us-east-1.amazonaws.com \
             --partitions $(nproc) \
-            --bucket terasort-burst \
+            --bucket burstcomputing \
             --key terasort-1g \
             --backend redis-list \
             --ow-host 192.168.49.2 \
