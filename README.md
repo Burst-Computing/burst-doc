@@ -14,7 +14,8 @@ Here is a brief description of the most rellevant repositories:
 - `burst-validation`: Repository for validating the Burst Computing framework. This repository contains the applications that are used to test the framework.
 
 ## Hello World example
-This example wants to show how to use the Burst Computing framework to run a minimal setup (single host, prebuilt images, no data configuration). Please, enter [here](./hello.md) to see the details of the example.
+This example wants to show how to use the Burst Computing framework to run a minimal setup (single host, prebuilt images, no data configuration). Please, enter to see the details of the example:
+- [Hello world example](./hello.md)
 
 ## Detailed Instructions
 This section provides detailed instructions for reproduce the figure results of the paper. There are a dedicated file per figure. Please, find it in the following links:
