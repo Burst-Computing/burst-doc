@@ -2,7 +2,8 @@
 
 For this experiment, we need to create a k8s cluster in AWS EKS. The k8s cluster will be composed by 1 t4i.xlarge EC2 (4 vCPUs and
 16 GB RAM) for the controller, and 20 c7i.12xlarge EC2 (48 vCPUs and 96 GB RAM) for the invokers.
-If you want to skip running the large-scale burst in EKS, just jump to [render figure section](#rendering-the-figure).
+
+If you want to skip running the large-scale burst in EKS, just jump to [render figure section](#rendering-the-figure) and plot the already generated results.
 
 ## Launching bursts over AWS EKS
 0. Ensure that you're using Python 3.9.
@@ -17,7 +18,7 @@ git clone https://github.com/Burst-Computing/lithops-burst.git
 
 2. Install the required dependencies
 ```bash
-python3 setup.py install
+pip install .[aws]
 ```
 
 3. Clone openwhisk-deploy-kube-burst repository
