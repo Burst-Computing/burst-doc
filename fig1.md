@@ -39,10 +39,10 @@ python3 examples/map_burst.py
 7. Notice that the execution stats are stored in `./results.csv` file. 
 
 ## Rendering the figure
-1. Clone the validation repository:
+1. Clone the validation results repository:
 ```bash
-git clone https://github.com/Burst-Computing/burst-validation.git
-cd burst-validation
+git clone https://github.com/Burst-Computing/burst-validation-results.git
+cd burst-validation-results
 ```
 
 2. Execute the plot script:
