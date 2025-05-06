@@ -43,6 +43,15 @@ You need to deploy Openwhisk over the Kubernetes cluster.
         git clone https://github.com/Burst-Computing/burst-validation.git
         cd burst-validation
         ```
+    - Ensure you're using Python 3.10:
+        ```bash
+        python3 --version
+        ```
+    - Create a virtual environment:
+        ```bash
+        python3 -m venv venv
+        source venv/bin/activate
+        ```
     - Install the required dependencies:
         ```bash
         pip install -r requirements.txt
