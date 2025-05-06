@@ -27,9 +27,10 @@ git clone https://github.com/Burst-Computing/openwhisk-deploy-kube-burst.git
 cd openwhisk-deploy-kube-burst
 ```
 
-4. Create the k8s cluster from YAML file
+4. Create the k8s cluster from YAML file and deploy OpenWhisk
 ```bash
 eksctl create cluster -f eks/960spot.yaml
+helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f eks/deploy.yaml
 ```
 
 5. Configure the Lithops config file for using OpenWhisk deployed
