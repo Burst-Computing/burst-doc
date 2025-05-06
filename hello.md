@@ -27,9 +27,14 @@ You need to deploy Openwhisk over the Kubernetes cluster.
         ```bash
         kubectl label nodes minikube openwhisk-role=invoker
         ```
+    - Clone the openwhisk-deploy-kube-burst repository:
+        ```bash
+        git clone https://github.com/Burst-Computing/openwhisk-deploy-kube-burst.git
+        cd openwhisk-deploy-kube-burst
+        ```
     - Deploy Openwhisk:
         ```bash
-        helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f https://raw.githubusercontent.com/Burst-Computing/openwhisk-deploy-kube-burst/refs/heads/master/minikube.yaml
+        helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f minikube.yaml
         ```
 
 4. **Launch the terasort application in burst mode**.
