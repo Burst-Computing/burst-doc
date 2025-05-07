@@ -4,6 +4,12 @@ This example wants to show how to use the Burst Computing framework to run a min
 ## How to run the Hello World
 This minimal example will use simplest infrastructure to run the terasort application in burst mode. It also uses prebuilt Docker images  for straightforward deployment. 
 
+Setup:
+- Ubuntu Desktop 24.04
+- Docker
+
+
+
 It doesn't intend to be a production-ready example: to show large-scale burst computing, you need to move to "Detailed Instructions" section.
 
 1. **Create a Minikube cluster**.
@@ -37,7 +43,31 @@ You need to deploy Openwhisk over the Kubernetes cluster.
         helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f minikube.yaml
         ```
 
-4. **Launch the terasort application in burst mode**.
+4. Configure the data (MinIO deployment) over minikube:
+    - Deploy MinIO:
+        ```bash
+        kubectl apply -f https://raw.githubusercontent.com/Burst-Computing/openwhisk-deploy-kube-burst/refs/heads/master/minio.yaml
+        ```
+    - Modify `/etc/hosts` to add the MinIO service:
+        ```bash
+        echo "$(minikube ip) minio-service.default.svc.cluster.local" | sudo tee -a /etc/hosts
+        ```
+    - Install MinIO client: [instructions here](https://min.io/docs/minio/linux/reference/minio-mc.html#install-mc)
+    - Create a bucket in MinIO:
+        ```bash
+        mc alias set minio http://minio-service.default.svc.cluster.local:30000 minioadmin minioadmin
+        mc mb minio/burstcomputing
+        ```
+    - Upload the 1GB terasort file ([download here](https://rovira-my.sharepoint.com/:u:/g/personal/21155349-h_epp_urv_cat/ERcu6rQ1GEVOv8kwFnFKhlwBI2q8ejGkMaKXxjBFm6lFdQ)) to the bucket:
+        ```bash
+        mc cp terasort-1g minio/burstcomputing
+        ```
+    - Verify the file is in the bucket:
+        ```bash
+        mc ls minio/burstcomputing
+        ```
+
+5. **Launch the terasort application in burst mode**.
     - Clone the burst-validation repository:
         ```bash
         git clone https://github.com/Burst-Computing/burst-validation.git
@@ -59,7 +89,7 @@ You need to deploy Openwhisk over the Kubernetes cluster.
     - Execute the terasort application:
         ```bash
         PYTHONPATH=. python3 terasort/terasort_burst.py \
-            --ts-endpoint https://s3.us-east-1.amazonaws.com \
+            --ts-endpoint http://minio-service.default.svc.cluster.local:30000 \
             --partitions $(nproc) \
             --bucket burstcomputing \
             --key terasort-1g \
