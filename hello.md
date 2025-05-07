@@ -58,9 +58,9 @@ You need to deploy Openwhisk over the Kubernetes cluster.
         mc alias set minio http://minio-service.default.svc.cluster.local:30000 minioadmin minioadmin
         mc mb minio/burstcomputing
         ```
-    - Upload the 1GB terasort file ([download here](https://rovira-my.sharepoint.com/:u:/g/personal/21155349-h_epp_urv_cat/ERcu6rQ1GEVOv8kwFnFKhlwBI2q8ejGkMaKXxjBFm6lFdQ)) to the bucket:
+    - Transfer the 1GB file to the bucket:
         ```bash
-        mc cp terasort-1g minio/burstcomputing
+        curl -L https://github.com/Burst-Computing/terasort-1gb/raw/refs/heads/main/terasort-1g | mc pipe minio/burstcomputing/terasort-1g
         ```
     - Verify the file is in the bucket:
         ```bash
@@ -97,7 +97,6 @@ You need to deploy Openwhisk over the Kubernetes cluster.
             --ow-host 192.168.49.2 \
             --ow-port 31001 \
             --granularity $(($(nproc)/2)) \
-            --join False \
             --chunk-size 32 \
             --runtime-memory 10240  # 10GB
         ```
