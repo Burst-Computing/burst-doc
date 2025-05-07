@@ -95,7 +95,7 @@ You need to deploy Openwhisk over the Kubernetes cluster.
             --ow-host 192.168.49.2 \
             --ow-port 31001 \
             --granularity $(($(nproc)/2)) \
-            --chunk-size 32 \
+            --chunk-size 1024 \
             --runtime-memory 10240  # 10GB
         ```
     - The application will download a 1GB file in the S3 bucket and sort it. Data shuffling will be done using the communication middleware. 
