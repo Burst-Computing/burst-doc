@@ -2,13 +2,11 @@
 This example wants to show how to use the Burst Computing framework to run a minimal example that involves all the components of the system. The example is a terasort application, which sorts a 1GB file. The example is implemented in Rust and uses the OpenWhisk framework to run the application in burst mode.
 
 ## How to run the Hello World
-This minimal example will use simplest infrastructure to run the terasort application in burst mode. It also uses prebuilt Docker images  for straightforward deployment. 
+This minimal example uses the simplest infrastructure to run the terasort application in burst mode. It also uses prebuilt Docker images for straightforward deployment. It has been successfully reproduced on a single m7i.xlarge (4 vCPUs, 16 GB RAM) EC2 instance.
 
 Setup:
 - Ubuntu Desktop 24.04
 - Docker
-
-
 
 It doesn't intend to be a production-ready example: to show large-scale burst computing, you need to move to "Detailed Instructions" section.
 
@@ -16,7 +14,7 @@ It doesn't intend to be a production-ready example: to show large-scale burst co
    - Install Minikube (https://minikube.sigs.k8s.io/docs/start/ and kubectl (https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/).
    - Start Minikube:
         ```bash
-        minikube start
+        minikube start --cpu max --memory max
         ```
 
 2. **Launch a communication backend inside k8s**.
