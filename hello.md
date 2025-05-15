@@ -92,7 +92,7 @@ You need to deploy Openwhisk over the Kubernetes cluster.
             --bucket burstcomputing \
             --key terasort-1g \
             --backend redis-list \
-            --ow-host 192.168.49.2 \
+            --ow-host $(minikube ip) \
             --ow-port 31001 \
             --granularity $(($(nproc)/2)) \
             --chunk-size 1024 \
