@@ -1,6 +1,6 @@
 # Figure 12: Terasort application
 
-The terasort application executes over two m7i.48xlarge invokers (96 vCPUs, 384 GB). It sort 100GB of data, in 256 workers. 
+The terasort application executes over two m7i.24xlarge invokers (96 vCPUs, 384 GB). It sort 100GB of data, in 256 workers. 
 
 If you want to skip running the large-scale execution in EKS, just jump to [render figure section](#rendering-the-figure) and plot the already generated results.
 
