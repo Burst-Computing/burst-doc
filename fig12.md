@@ -1,6 +1,6 @@
 # Figure 12: Terasort application
 
-The terasort application executes over two m7i.24xlarge invokers (96 vCPUs, 384 GB). It sort 100GB of data, in 256 workers. 
+The terasort application executes over two m7i.24xlarge invokers (96 vCPUs, 384 GB). It sort 100GB of data, in 192 workers. 
 
 If you want to skip running the large-scale execution in EKS, just jump to [render figure section](#rendering-the-figure) and plot the already generated results.
 
@@ -41,7 +41,7 @@ eksctl create cluster -f eks/terasort.yaml
 ```bash
 PYTHONPATH=. python3 terasort/terasort_burst.py \
     --ts-endpoint https://s3.us-east-1.amazonaws.com \
-    --partitions 256 \
+    --partitions 192 \
     --bucket burstcomputing \
     --key terasort-100g \
     --backend redis-list \
