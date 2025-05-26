@@ -49,10 +49,10 @@ echo "DragonFly server internal IP: $internal_ip"
 ```
 
 3. Deploy OpenWhisk:
-    - Modify the `eks/deploy.yaml` file in the `openwhisk-deploy-kube-burst` directory to set BCM address (internal IP from the previous step and port 6379) inside the `whisk.middleware.RedisList` key. 
+    - Modify the `eks/ow-burst.yaml` file in the `openwhisk-deploy-kube-burst` directory to set BCM address (internal IP from the previous step and port 6379) inside the `whisk.middleware.RedisList` key. 
     - Deploy OpenWhisk:
     ```bash
-    helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f eks/deploy.yaml
+    helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f eks/ow-burst.yaml
     ```
 
 4. Clone burst validation repository:
@@ -101,11 +101,15 @@ aws ec2 terminate-instances --instance-ids "$instance_id"
 
 The steps are similar to the burst mode:
 
-1. EKS
+1. You can use the same EKS cluster created in the previous section, but you will need to delete the existing burst OpenWhisk deployment and deploy the classic OpenWhisk.
+```bash
+cd ~/openwhisk-deploy-kube-burst
+helm uninstall owdev -n openwhisk
+# wait for the resources to be deleted
+helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f eks/ow-classic.yaml
+```
 
-2. OpenWhisk
-
-3. Compile the terasort application:
+2. Compile the terasort application:
 ```bash
 cd ~/burst-validation/terasort/ow-map
 zip -r - * | docker run --rm -i burstcomputing/runtime-rust-map:latest -compile main > ../terasort-map.zip
@@ -113,7 +117,7 @@ cd ../ow-reduce
 zip -r - * | docker run --rm -i burstcomputing/runtime-rust-reduce:latest -compile main > ../terasort-reduce.zip
 ```
 
-4. Launch the terasort application:
+3. Launch the terasort application:
 ```bash
 cd ~/burst-validation
 PYTHONPATH=. python3 terasort/terasort_mapreduce.py \
@@ -126,9 +130,9 @@ PYTHONPATH=. python3 terasort/terasort_mapreduce.py \
     --runtime-memory [memory]  # control depending on granularity
 ```
 
-5. The stats will be saved in the `terasort-classic-stats.csv` file in the current directory. The file will be needed for rendering the figure.
+4. The stats will be saved in the `terasort-classic-stats.csv` file in the current directory. The file will be needed for rendering the figure.
 
-6. Stop the EKS cluster:
+5. Stop the EKS cluster:
 ```bash
 cd ~/openwhisk-deploy-kube-burst
 eksctl delete cluster -f eks/terasort-half.yaml
