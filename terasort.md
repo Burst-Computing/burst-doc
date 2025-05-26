@@ -86,16 +86,17 @@ echo "DragonFly server internal IP: $internal_ip"
 ```
 
 5. Deploy OpenWhisk:
-    - Modify the `eks/ow-burst.yaml` file in the `openwhisk-deploy-kube-burst` directory to set BCM address (internal IP from the previous step and port 6379) inside the `whisk.middleware.RedisList` key.
-    - Deploy OpenWhisk:
+    - Use helm to deploy OpenWhisk with the burst configuration:
     ```bash
     helm install owdev ./helm/openwhisk \
     -n openwhisk \
     --create-namespace \
     -f eks/ow-burst.yaml \
+    --set whisk.middleware.RedisList="redis://$internal_ip:6379" \
     --set whisk.containerPool.userMemory="192000m" \
     --set whisk.limits.actions.memory.max="192000m"
     ```
+    - Wait for the resources to be created and the OpenWhisk deployment to be ready.
     - Get the EKS control plane IP address:
     ```bash
     eks_control_plane_ip="$(kubectl get svc \
@@ -144,6 +145,12 @@ PYTHONPATH=. python3 terasort/terasort_burst.py \
 11. Stop the DragonFly server:
 ```bash
 aws ec2 terminate-instances --instance-ids "$instance_id"
+aws ec2 wait instance-terminated --instance-ids "$instance_id"
+```
+
+12. Delete the security group:
+```bash
+aws ec2 delete-security-group --group-id "$sg_id"
 ```
 
 ## Launching the terasort application a la MapReduce in AWS EKS
