@@ -15,65 +15,114 @@ Ensure you have the following prerequisites met in your environment:
 The following resources are required in your AWS account:
 
 - An AMI with the DragonFly server available in your AWS account.
-- A VPC with at least two subnets in different availability zones for the EKS cluster.
-- A security group for the DragonFly server allowing inbound traffic on the default redis port (6379).
 - An S3 bucket for storing the terasort data.
 
 ## Launching the terasort application over burst platform in AWS EKS
 
 1. Create the k8s cluster from YAML file:
 ```bash
+cd ~
 git clone https://github.com/Burst-Computing/openwhisk-deploy-kube-burst.git
 cd openwhisk-deploy-kube-burst
 eksctl create cluster -f eks/terasort-half.yaml
 ```
 
-2. Launch a DragonFly server on c7i.24xlarge VM (96 vCPUs, 192 GB), ensure that the server is running and reachable.
+2. Get the VPC ID of the created EKS cluster:
 ```bash
+vpc_id="$(aws eks describe-cluster \
+  --name terasort-cluster \
+  --query "cluster.resourcesVpcConfig.vpcId" \
+  --output text)"
+echo "EKS VPC ID: $vpc_id"
+```
+
+3. Create a security group for the DragonFly server with the required port:
+```bash
+sg_id="$(aws ec2 create-security-group \
+  --group-name dragonfly-server-sg \
+  --description "Security group for DragonFly server" \
+  --vpc-id "$vpc_id" \
+  --query "GroupId" \
+  --output text)"
+vpc_cidr="$(aws ec2 describe-vpcs \
+  --vpc-ids "$vpc_id" \
+  --query "Vpcs[0].CidrBlock" \
+  --output text)"
+aws ec2 authorize-security-group-ingress \
+  --group-id "$sg_id" \
+  --protocol tcp \
+  --port 6379 \
+  --cidr "$vpc_cidr"
+echo "DragonFly server security group ID: $sg_id"
+```
+
+4. Launch a DragonFly server on c7i.24xlarge VM (96 vCPUs, 192 GB), ensure that the server is running and reachable.
+```bash
+subnet_id="$(aws ec2 describe-subnets \
+  --filters "Name=vpc-id,Values=$vpc_id" \
+  --query "Subnets[0].SubnetId" \
+  --output text)"
+ami_id="$(aws ec2 describe-images \
+  --owners self \
+  --filters "Name=name,Values=ubuntu-dragonfly" \
+  --query "Images[0].ImageId" \
+  --output text)"
 instance_id="$(aws ec2 run-instances \
-  --image-id [ami-0123456789abcdef0] \  # Replace with your DragonFly server AMI ID
+  --image-id "$ami_id" \
   --instance-type c7i.24xlarge \
-  --subnet-id [subnet-0123456789abcdef0] \  # Replace with your subnet ID
-  --security-group-ids [sg-0123456789abcdef0] \  # Replace with your security group ID
+  --subnet-id "$subnet_id" \
+  --security-group-ids "$sg_id" \
   --instance-market-options "MarketType=spot" \
   --count 1 \
   --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=dragonfly-server}]" \
   --query "Instances[0].InstanceId" \
   --output text)"
 aws ec2 wait instance-running --instance-ids "$instance_id"
-internal_ip="$(aws ec2 describe-instances
-  --instance-ids "$instance_id"
-  --query "Reservations[0].Instances[0].PrivateIpAddress" 
+internal_ip="$(aws ec2 describe-instances \
+  --instance-ids "$instance_id" \
+  --query "Reservations[0].Instances[0].PrivateIpAddress" \
   --output text)"
 echo "DragonFly server internal IP: $internal_ip"
 ```
 
-3. Deploy OpenWhisk:
-    - Modify the `eks/ow-burst.yaml` file in the `openwhisk-deploy-kube-burst` directory to set BCM address (internal IP from the previous step and port 6379) inside the `whisk.middleware.RedisList` key. 
+5. Deploy OpenWhisk:
+    - Modify the `eks/ow-burst.yaml` file in the `openwhisk-deploy-kube-burst` directory to set BCM address (internal IP from the previous step and port 6379) inside the `whisk.middleware.RedisList` key.
     - Deploy OpenWhisk:
     ```bash
-    helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f eks/ow-burst.yaml
+    helm install owdev ./helm/openwhisk \
+    -n openwhisk \
+    --create-namespace \
+    -f eks/ow-burst.yaml \
+    --set whisk.containerPool.userMemory="192000m" \
+    --set whisk.limits.actions.memory.max="192000m"
+    ```
+    - Get the EKS control plane IP address:
+    ```bash
+    eks_control_plane_ip="$(kubectl get svc \
+    -n openwhisk owdev-nginx \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+    echo "EKS control plane IP: $eks_control_plane_ip"
     ```
 
-4. Clone burst validation repository:
+6. Clone burst validation repository:
 ```bash
 cd ~
 git clone https://github.com/Burst-Computing/burst-validation.git
 cd burst-validation
 ```
 
-5. Install the required dependencies:
+7. Install the required dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-6. Compile the terasort application:
+8. Compile the terasort application:
 ```bash
 cd terasort/ow-burst
 zip -r - * | docker run --rm -i burstcomputing/runtime-rust-burst:latest -compile main > ../terasort-burst.zip
 ```
 
-7. Launch the terasort application:
+9. Launch the terasort application:
 ```bash
 cd ~/burst-validation
 PYTHONPATH=. python3 terasort/terasort_burst.py \
@@ -82,17 +131,17 @@ PYTHONPATH=. python3 terasort/terasort_burst.py \
     --bucket terasort-burst \
     --key terasort-50g \
     --backend redis-list \
-    --ow-host [eks-control-plane-ip] \
+    --ow-host "$eks_control_plane_ip" \
     --ow-port 443 \
     --granularity 48 \
     --join False \
     --chunk-size 1024 \
-    --runtime-memory [memory]  # control depending on granularity
+    --runtime-memory 192000
 ```
 
-8. The stats will be saved in the `terasort-burst.csv` file in the current directory. The file will be needed for rendering the figure.
+10. The stats will be saved in the `terasort-burst.csv` file in the current directory. The file will be needed for rendering the figure.
 
-9. Stop the DragonFly server:
+11. Stop the DragonFly server:
 ```bash
 aws ec2 terminate-instances --instance-ids "$instance_id"
 ```
@@ -106,7 +155,16 @@ The steps are similar to the burst mode:
 cd ~/openwhisk-deploy-kube-burst
 helm uninstall owdev -n openwhisk
 # wait for the resources to be deleted
-helm install owdev ./helm/openwhisk -n openwhisk --create-namespace -f eks/ow-classic.yaml
+helm install owdev ./helm/openwhisk \
+  -n openwhisk \
+  --create-namespace \
+  -f eks/ow-classic.yaml \
+  --set whisk.containerPool.userMemory="192000m" \
+  --set whisk.limits.actions.memory.max="192000m"
+eks_control_plane_ip="$(kubectl get svc \
+  -n openwhisk owdev-nginx \
+  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+echo "EKS control plane IP: $eks_control_plane_ip"
 ```
 
 2. Compile the terasort application:
@@ -125,9 +183,9 @@ PYTHONPATH=. python3 terasort/terasort_mapreduce.py \
     --partitions 96 \
     --bucket terasort-burst \
     --key terasort-50g \
-    --ow-host [eks-control-plane-ip] \
+    --ow-host "$eks_control_plane_ip" \
     --ow-port 443 \
-    --runtime-memory [memory]  # control depending on granularity
+    --runtime-memory 4000
 ```
 
 4. The stats will be saved in the `terasort-classic-stats.csv` file in the current directory. The file will be needed for rendering the figure.
