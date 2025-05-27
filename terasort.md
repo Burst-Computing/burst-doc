@@ -137,7 +137,7 @@ PYTHONPATH=. python3 terasort/terasort_burst.py \
     --granularity 48 \
     --join False \
     --chunk-size 1024 \
-    --runtime-memory 192000
+    --runtime-memory $((192000 * 95 / 100))
 ```
 
 10. The stats will be saved in the `terasort-burst.csv` file in the current directory. The file will be needed for rendering the figure.
@@ -192,7 +192,7 @@ PYTHONPATH=. python3 terasort/terasort_mapreduce.py \
     --key terasort-50g \
     --ow-host "$eks_control_plane_ip" \
     --ow-port 443 \
-    --runtime-memory 4000
+    --runtime-memory $((4000 * 95 / 100))
 ```
 
 4. The stats will be saved in the `terasort-classic-stats.csv` file in the current directory. The file will be needed for rendering the figure.
